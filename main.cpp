@@ -15,10 +15,14 @@ int main() {
     int W = 512;
     int H = 512;
     double fov = M_PI/3;
-    int NB_path = 10.;
+    int NB_path = 10;
     Scene scene;
-    Sphere *ball1=new Sphere(Vector(0., 0., 0.), 10., Vector(1., 1., 1.));
+    Sphere *ball1=new Sphere(Vector(-20., 0., 0.), 10., Vector(1., 1., 1.),0);
+    Sphere *ball2=new Sphere(Vector(0., 0., 0.), 10., Vector(1., 1., 1.),1.3);
+    Sphere *ball3=new Sphere(Vector(20., 0., 0.), 10., Vector(1., 1., 1.),1.7);
     scene.add(ball1);
+    scene.add(ball2);
+    scene.add(ball3); 
     //cout<<scene.spheres.size()<<endl;
     Vector camera(0,0,55);
     Image image=Image(W,H, fov);
@@ -31,7 +35,7 @@ int main() {
             Vector color(0.,0.,0.);
             //cout<<"Here 2"<<endl;
             for (int k=0;k<NB_path;k++){
-                color = color+ scene.getColor(ray, 2) ;
+                color = color+ scene.getColor(ray,5);
             }
             //cout<<"[" << color[0] << " "<< color[1] << " "<<color[2] <<"]"<<endl;
             color/=NB_path;
@@ -43,7 +47,7 @@ int main() {
             } 
         }
 // save image 
-    stbi_write_png("lab1.png", W, H, 3, &image.pixel[0], 0);
+    stbi_write_png("lab1_triball.png", W, H, 3, &image.pixel[0], 0);
     
     return 0;
 }
