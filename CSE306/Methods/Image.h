@@ -8,15 +8,13 @@ using namespace std;
 struct Image {
     double W;   
     double H;   
-    double fov; 
-    Vector Q;   
+    double fov;   
     vector<unsigned char> pixel;
 
-    Image(double W, double H, double fov, Vector Q) {
+    Image(double W, double H, double fov) {
         this->W = W;
         this->H = H;
         this->fov = fov;
-        this->Q = Q;
         this->pixel = initpixel();
     }
 
