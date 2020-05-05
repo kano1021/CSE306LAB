@@ -14,12 +14,14 @@ public:
     Vector C;
     double R;
     Vector albedo;
-    bool mirror;
-    Sphere(Vector C, double R, Vector albedo, bool mirror=false){
+    double type;//-1 for difussion,0 for mirror, n>1 for glass
+    int islight=0;
+    Sphere(Vector C, double R, Vector albedo, double type=-1, int islight=0){
         this->C=C;
         this->R=R;
         this->albedo=albedo;
-        this->mirror=mirror;
+        this->type=type;
+        this->islight=islight;
     }
     Intersection intersect(const Ray& ray){
         Vector C = this->C;

@@ -1,8 +1,43 @@
 #ifndef SCENE_H
 #define SCENE_H
 #include<iostream>
+#include<random>
+#include<cmath>
+
 #include "Sphere.h"
+
 using namespace std;
+
+uniform_real_distribution<double> distribution(0.0,1.0);
+default_random_engine generator(10);
+
+void boxMuller(double stdev , double &x, double &y) { 
+    double r1 = distribution (generator) ;
+    double r2 = distribution (generator) ;
+    x = sqrt(-2 * log(r1))*cos(2 * M_PI*r2)*stdev; 
+    y = sqrt(-2 * log(r1))*sin(2 * M_PI*r2)*stdev;
+}
+
+Vector random_cos(const Vector &N){
+    double r1 = distribution(generator);
+    double r2 = distribution(generator);
+    double x = cos(2 * M_PI * r1) * sqrt(1 - r2);
+    double y = sin(2 * M_PI * r1) * sqrt(1 - r2);
+    double z = sqrt(r2);
+
+    Vector T1;
+    double a=abs(N[0]);
+    double b=abs(N[1]);
+    double c=abs(N[2]);
+    if (a<=b &&a<=c) T1=Vector(0,N[2],-N[1]);
+    else if (b<=a &&b<=c) T1=Vector(N[2],0,-N[0]);
+    else T1=Vector(N[1],-N[0],0);
+
+    T1 = normalize(T1);
+    Vector T2 = cross(N, T1);
+
+    return T1*x+T2*y+N*z;
+} 
 class Scene {
 public: 
     vector<Sphere*> spheres;
@@ -57,30 +92,34 @@ public:
 
     Intersection intersect(const Ray &ray) {
         Intersection its;
-        //cout<<"Here 2"<<endl;
         Sphere* closest = this->closest(ray);
-        //cout<<closest->R<<endl;
         if (closest->R == 0) {
             its.occured = false;
         } else {
-            //cout<<"Here 5"<<endl;
             its = closest->intersect(ray);
-            //cout<<"Here 6"<<endl;
             its.albedo = closest->albedo;
         }
         return its;
     }
 
-    Vector getColor(const Ray &ray, int ray_depth) {
+    Vector getColor(const Ray &ray, int ray_depth, bool lastdiffuse=false) {
         if (ray_depth < 0) return Vector(0. , 0. , 0.) ; // terminates recursion at some ←􏰁 point
         Sphere *cst_s=this->closest(ray);
         Vector color(0.,0.,0.);
         Intersection its=this->intersect(ray);
-        //cout<<"[" << its.P[0] << " "<< its.P[1] << " "<<its.P[2]  << " "<< its.t << " " <<"]"<<endl;
-        if (its.occured) { 
+
+        if (its.occured) {
+            if (cst_s->islight) {
+                if (lastdiffuse) { // if this is an indirect diffuse bounce
+                    // if we hit a light source by chance via an indirect diffuse bounce, return←􏰁 0 to avoid counting it twice
+                    return Vector (0. , 0. , 0.) ; 
+                }else{
+                    return Vector(1. ,1. ,1.)*cst_s->islight/(4*pow(M_PI*cst_s->R,2)); // R is the ←􏰁 spherical light radius
+                }
+            } 
             color=cst_s->albedo;
             Vector P=its.P+its.N*1e-4;
-            //cout<<"[" << color[0] << " "<< color[1] << " "<<color[2] <<"]"<<endl;
+            //return color;
             if (cst_s->type==0) {
                 Ray reflected_ray = Ray(P, ray.u -its.N * (2 * dot(ray.u, its.N)));
                 return this->getColor(reflected_ray, ray_depth - 1 );
@@ -97,9 +136,15 @@ public:
     
                 Intersection new_its = this->intersect(new_ray);
                 bool visible=(!new_its.occured || new_its.t > d );
-                //cout<<visible<<endl;
-                //cout<<new_its.t<<" "<<d<<" "<<1/ M_PI * (I / (4 * M_PI * pow(d, 2))) * visible * max(dot(its.N, w), 0.)<<endl;
+                
                 color = (new_its.albedo / M_PI) * (I / (4 * M_PI * pow(d, 2))) * visible * max(dot(its.N, w), 0.);
+                
+                if (this->inLight){
+                    Ray randomRay(P,random_cos(its.N)); // randomly sample ray using random cos 
+                    color += cst_s->albedo * this->getColor(randomRay, ray_depth-1);
+                }
+
+                //add direct light
                 return color;
             } 
             if (cst_s->type>0){
@@ -110,15 +155,12 @@ public:
                 P=its.P-N*1e-4;
                 double k0 = pow(((1 - n)/(1 + n)), 2);
                 double R = k0 + (1 - k0) * pow((1 - abs(dot(N, w))), 5);
-                double u = (double) rand() / (RAND_MAX);
+                double u = distribution(generator);
 
                 if (u<R){
                     Ray reflected_ray = Ray(P, w -N * (2 * dot(w, N)));
                     color= this->getColor(reflected_ray, ray_depth - 1 );
                 }else{
-                    double g=dot(w,N);
-                    if (g>0)cout<<g<<endl;
-                    
                     //cout<<n<<" w:["<<w[0]<<","<<w[1]<<","<<w[2]<<" N:"<<"["<<N[0]<<","<<N[1]<<","<<N[2]<<" "<<endl;
                     if (dot(w,N)>0) {
                         n=1/n;
@@ -133,9 +175,6 @@ public:
                     Ray new_ray(P,wt+wn);
                     color=this->getColor(new_ray, ray_depth - 1 ); 
                 }
-            }
-            if (this->inLight){
-
             }
         }
         return color;
