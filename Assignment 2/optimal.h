@@ -8,8 +8,8 @@
 using namespace std;
 
 //change SH to switch the method
-#define SH 0
-#define KD 1
+#define SH 1
+#define KD 0
 
 
 class objective_function{
@@ -156,11 +156,11 @@ vector<double> OptimalTransport(vector<Point> X,string form){
     if (form=="uniform"){
         for (int i=0;i<n;i++){
             lambdas.push_back(1/double(n));
-            ws.push_back(1.0);
+            ws.push_back(0.1);
         }
         //cout<<lambdas;
     }else if (form=="normal") {
-        double Sum=0;
+        double Sum=0.0;
         vector<double> prelambdas;
         for (int i=0;i<n;i++){
             double lambda=exp(-dist(ctr,X[i])/0.02);//point nearer centre have larger area(lambda)
@@ -177,5 +177,33 @@ vector<double> OptimalTransport(vector<Point> X,string form){
     }
     return Ws;
 }
+
+void OTweight(vector<Point> X, vector<double> &ws, string form){
+    objective_function obj;
+    vector<double> lambdas;
+    int n=X.size();
+    Point ctr(0.5,0.5);
+    if (form=="uniform"){
+        for (int i=0;i<n;i++){
+            lambdas.push_back(1/double(n));
+        }
+        //cout<<lambdas;
+    }else if (form=="normal") {
+        double Sum=0.0;
+        vector<double> prelambdas;
+        for (int i=0;i<n;i++){
+            double lambda=exp(-dist(ctr,X[i])/0.02);//point nearer centre have larger area(lambda)
+            Sum+=lambda;
+            prelambdas.push_back(lambda);
+        }
+        for (int i=0;i<n;i++) lambdas.push_back(prelambdas[i]/Sum);
+    }
+    lbfgsfloatval_t *w=obj.run(X, ws,lambdas);
+    for (int i=0;i<n;i++){
+        ws[i]=w[i];
+    }
+    return;
+}
+
 
 #endif

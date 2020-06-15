@@ -10,11 +10,10 @@ using namespace std;
 
 #define g Point(0.0,-9.8)
 //number of particles
-#define N 1000
-#define iters 10
+#define N 100
+#define iters 100
 
-void Move(vector<Point> &Ps, vector<Point> &v, vector<double> mass, double eps=0.004, double dt=0.002){
-    vector<double> W=OptimalTransport(Ps,"uniform");
+void Move(vector<Point> &Ps, vector<Point> &v, vector<double> mass, vector<double> W, double eps=0.004, double dt=0.002){
     vector<Polygon> Poly=SHDiagram(Ps,W);
     for (int i=0;i<Ps.size();i++){
         if (mass[i]>0){//Assum only water moves but air not.
@@ -52,16 +51,23 @@ void Fluid(){
     // so mass is 1/N kg;
     Point circle(1.0/2,2.0/5);
     //cout<<circle<<endl;
-    double rsq=4.0/25;//initial water circle
+    double rsq=1.0/16;//initial water circle
     vector<double> ws(N, 1/N);
     for (int i=0;i<N;i++){
         //cout<<Ps[i];
         if (dist(Ps[i],circle)<=rsq) mass[i]=200.0;
     }
+    cout<<mass;
+    return;
     vector<Polygon> Polys=SHDiagram(Ps,ws);
     save_svg_p(Polys,Ps,"init.svg");
+    vector<double> W;
+    for (int i=0;i<N;i++){
+        W.push_back(0.01);
+    }
     for (int i=0;i<iters;i++){
-        Move(Ps,v,mass);
+        OTweight(Ps,W,"uniform");
+        Move(Ps,v,W,mass);
         //cout<<Ps;
         vector<Polygon> Polys=SHDiagram(Ps,ws);
         save_svg_animated(Polys,"fluid.svg", i, iters);
