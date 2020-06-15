@@ -106,5 +106,14 @@ class Polygon{
         }
 };
 
+Point centroid(Polygon ps){
+    Point r;
+    for (auto& p: ps.vertices){
+        r=r+p;
+    }
+    r=r/ps.vertices.size();
+    return r;
+}
+
 
 #endif

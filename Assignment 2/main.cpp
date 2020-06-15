@@ -5,11 +5,22 @@
 #include "savesvg.h"
 #include "voronoi2D.h"
 #include "optimal.h"
+#include "fluid.h"
 
 using namespace std;
 
-#define SIZE 2000
+#define SIZE 200
 
+//change SH to switch the method
+#define SH 1
+#define KD 1
+
+bool polygoneq(Polygon a, Polygon b){
+    for (int i=0;i<a.vertices.size();i++){
+        if (!eq(a.vertices[i],b.vertices[i])) return false;
+    }
+    return true;
+}
 
 void testVoronoi(){
     vector<Point> sites;
@@ -18,7 +29,7 @@ void testVoronoi(){
 
     for (int i=0;i<SIZE;i++){
         Point x=Point(((double) rand() / (RAND_MAX)),((double) rand() / (RAND_MAX)));
-        double w=(double)0.1/SIZE;
+        double w=(double)(i+1)/SIZE/SIZE/10;
         sites.push_back(x);
         ws.push_back(w);
         //cout<<w<<endl;
@@ -49,54 +60,51 @@ void testVoronoi(){
 
 void testoptimal(){
     vector<Point> sites;
-    vector<double> ws;
-    vector<double> prelambdas;
-    Point ctr(0.5,0.5);
-    double Sum=0;
     for (int i=0;i<SIZE;i++){
         Point x=Point(((double) rand() / (RAND_MAX)),((double) rand() / (RAND_MAX)));
-        double w=(double) 0.1;
-        double lambda=exp(-dist(ctr,x)/0.02);//point nearer centre have larger area(lambda)
-        Sum+=lambda;
         sites.push_back(x);
-        ws.push_back(w);
-        prelambdas.push_back(lambda);
     }
 
-    //normalize lambdas to let there sum=1;
-    vector<double> lambdas;
-    for (int i=0;i<sites.size();i++) lambdas.push_back(prelambdas[i]/Sum);
-    cout<<lambdas;
-    objective_function obj;
-    lbfgsfloatval_t *ret= obj.run(sites,ws,lambdas);
-    vector<double> Ws;
-    for (int i=0;i<SIZE;i++){
-        Ws.push_back(ret[i]);
-    }
-    cout<<Ws;
+    //vector<double> Ws=OptimalTransport(sites,"normal");
+    vector<double> Ws=OptimalTransport(sites,"uniform");
 
-#if 0
+#if KD
     vector<vector<double> > siteskd;
-    double m=0;
+    double maxw=0;
     for (auto &w: Ws){
-        if (m<w) m=w;
+        if (maxw<w) maxw=w;
     }
-    for (int i=0;i<sites.size();i++){
-        vector<double> p=Pmtovec(sites[i],Ws[i],m);
+    //cout<<"m="<<maxw<<endl;
+    for (int i=0;i<SIZE;i++){
+        vector<double> p=Pmtovec(sites[i],Ws[i],maxw);
         siteskd.push_back(p);
+        //cout<<p<<endl;
     }
-    vector<Polygon> cells=voronoiDiagram(siteskd,m);
-
+    vector<Polygon> cells=voronoiDiagram(siteskd,maxw);
+    //cout<<"KD="<<cells.size()<<endl;
     string filename1="opt_Kd.svg";
 
     save_svg_p(cells, sites, filename1);
 
 #endif
 
-    string filename1="opt_SH.svg";
+#if SH
+    string filename2="opt_SH.svg";
 
     vector<Polygon> cells_SH=SHDiagram(sites,Ws);
-    save_svg_p(cells_SH, sites, filename1);
+    //cout<<"SH="<<cells_SH.size()<<endl;
+    save_svg_p(cells_SH, sites, filename2);
+#endif
+    for (int i; i<cells.size();i++){
+        if (!(polygoneq(cells[i],cells_SH[i]))){
+            cout<<"KD=";
+            cells[i].print();
+            cout<<"SH=";
+            cells_SH[i].print();
+            cout<<endl;
+        }
+    }
+
     return;
 }
 
@@ -115,10 +123,11 @@ int main(){
     Polygon clipPolygon(diamond);
 
     
-    testoptimal();
+    //testoptimal();
     //Polygon outpolygon=SutherlandHodgman(subjectPolygon,clipPolygon);
     //outpolygon.print(); //some test
     //testKdTree();
     //testVoronoi();
+    Fluid();
     return 0;
 }

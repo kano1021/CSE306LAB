@@ -7,6 +7,11 @@
 
 using namespace std;
 
+//change SH to switch the method
+#define SH 0
+#define KD 1
+
+
 class objective_function{
 protected:
     lbfgsfloatval_t *m_x;
@@ -46,7 +51,7 @@ public:
             Start the L-BFGS optimization; this will invoke the callback functions
             evaluate() and progress() when necessary.
          */
-        int ret = lbfgs(N, m_x, &fx, _evaluate,_progress, this, NULL);
+        int ret = lbfgs(N, m_x, &fx, _evaluate, NULL, this, NULL);
 
         /* Report the result. */
         printf("L-BFGS optimization terminated with status code = %d\n", ret);
@@ -85,7 +90,7 @@ protected:
             if (m<x[i]) m=x[i];
         }
         //USING KDTREE
-#if 0
+#if KD
         vector<vector<double> > siteskd;
         
         for (int i=0;i<n; i++){
@@ -95,14 +100,14 @@ protected:
         vector<Polygon> cells=voronoiDiagram(siteskd,m);
 #endif
         //USING SutherlandHodgman
-
-        vector<Polygon> cells_SH=SHDiagram(points,Ws);
-
+#if SH
+        vector<Polygon> cells=SHDiagram(points,Ws);
+#endif
         for (int i=0 ; i<n ; i++){
-            g[i]=- g_grad(cells_SH[i],lambdas[i],f);
+            g[i]=- g_grad(cells[i],lambdas[i],f);
             //cout<<g[i]<<", ";
         }
-        fx= - g_func(cells_SH,points, Ws,lambdas,f);
+        fx= - g_func(cells,points, Ws,lambdas,f);
         cout<<fx<<endl;
         return fx;
     }
@@ -143,5 +148,34 @@ protected:
     }
 };
 
+vector<double> OptimalTransport(vector<Point> X,string form){
+    objective_function obj;
+    vector<double> lambdas, ws;
+    int n=X.size();
+    Point ctr(0.5,0.5);
+    if (form=="uniform"){
+        for (int i=0;i<n;i++){
+            lambdas.push_back(1/double(n));
+            ws.push_back(1.0);
+        }
+        //cout<<lambdas;
+    }else if (form=="normal") {
+        double Sum=0;
+        vector<double> prelambdas;
+        for (int i=0;i<n;i++){
+            double lambda=exp(-dist(ctr,X[i])/0.02);//point nearer centre have larger area(lambda)
+            Sum+=lambda;
+            prelambdas.push_back(lambda);
+            ws.push_back(0.1);
+        }
+        for (int i=0;i<n;i++) lambdas.push_back(prelambdas[i]/Sum);
+    }
+    lbfgsfloatval_t *w=obj.run(X, ws,lambdas);
+    vector<double> Ws;
+    for (int i=0;i<n;i++){
+        Ws.push_back(w[i]);
+    }
+    return Ws;
+}
 
 #endif
