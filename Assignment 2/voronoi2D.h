@@ -2,20 +2,14 @@
 #define VORO
 
 #include <iostream>
+#include <string>
+#include <cmath>
 #include "kdtree.h"
 #include "Nodesets.h"
 #include "Polygon.h"
+#include "savesvg.h"
 using namespace std;
 
-vector<Point> site;
-
-vector<double> interweight(vector<double> A, vector<double> B, vector<double> ps, vector<double> pe, double wi, double wj){
-    vector<double> M=(ps+pe)/2;
-    vector<double> p=pe-ps;
-    M=M+p/(2*sq2(p))*(wi-wj);
-    double t=dot(M-A,p)/dot(B-A,p);
-    return A+((B-A)*t);
-}
 
 Point vectoP(vector<double> P){//transform vector to Point
     return Point(P[0],P[1]);
@@ -60,7 +54,7 @@ Polygon clipp(Point P, double w, vector<vector<double> > points,  Polygon subjec
                 }
                 prevVertex = curVertex;
             }
-            
+            if (outPolygon.vertices.size()==0)return outPolygon;
             subjectPolygon=outPolygon;
             //subjectPolygon.print();  //some test
         }
@@ -68,10 +62,10 @@ Polygon clipp(Point P, double w, vector<vector<double> > points,  Polygon subjec
     return subjectPolygon;
 }
 
-double farest(Point p, double w,Polygon points){
+double farest(Point p,Polygon points){
     double l=0;
     for (auto& x: points.vertices){
-        double d=dist(x,p)-w;
+        double d=dist(x,p);
         if(l<d) l=d;
     }
     return l;
@@ -79,26 +73,36 @@ double farest(Point p, double w,Polygon points){
 
 Polygon voronoicell(vector<double> P, vector<vector<double> > points, double m){
     Point PP=vectoP(P);
-    double w=m-P[2]*P[2];
+    double w;
+    w=m-P[2]*P[2];
+    //cout<<"m="<<m<<", w="<<w<<"P="<<P[2]*P[2]<<endl;
     vector<Point> square;
     square.push_back(Point(0,0));
     square.push_back(Point(0,1));
     square.push_back(Point(1,1));
     square.push_back(Point(1,0));
     Polygon subjectPolygon(square);
-    int startk=0,k=4;
+    int startk=0,k=int(log(points.size())/log(2));
+    //cout<<"here!"<<endl;
     KdTree* kdtree=new KdTree(points,points[0].size());
     knear r=kdtree->FindKnearest(P,k);
-    double farst=(farest(PP,w,subjectPolygon))*4;
-    while (r.ps[r.ps.size()-1].d<farst){
+    double farst=(farest(PP,subjectPolygon));
+    //cout<<"here!"<<endl;
+    while (r.ps[r.ps.size()-1].d<farst && startk<k){
         vector<vector<double> > knn; 
-        for (int i=startk;i<k;i++) knn.push_back(r.ps[i].p);
+        //cout<<"here!"<<startk<<","<<k<<endl;
+        for (int i=startk;i<k;i++) {
+            //cout<<r.ps[i].p<<endl;
+            knn.push_back(r.ps[i].p);
+        }
         subjectPolygon=clipp(PP,w,knn,subjectPolygon,m);
         startk=k;
-        k=k+k;
-        if (k>points.size()) k=points.size();
+        k=2*k;
+        if (k>points.size()-1) k=points.size()-1;
+        
         r=kdtree->FindKnearest(P,k);
-        farst=(farest(PP,w,subjectPolygon))*4;
+        
+        farst=(farest(PP,subjectPolygon));
     }
     vector<vector<double> > knn;
     for (int i=startk;i<k;i++) {
@@ -114,6 +118,7 @@ Polygon voronoicell(vector<double> P, vector<vector<double> > points, double m){
 vector<Polygon> voronoiDiagram(vector<vector<double> > points, double m){
     vector<Polygon> cells;
     for (int i=0;i<points.size();i++){
+        //cout<<points[i]<<endl;
         Polygon cell=voronoicell(points[i],points,m);
         cells.push_back(cell);
     }

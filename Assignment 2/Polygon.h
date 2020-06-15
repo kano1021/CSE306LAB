@@ -77,7 +77,9 @@ Point intersect(Line a, Line b){
 
 Point internorm(Point A, Point B, Point ps, Point pe, double wi, double wj){
     Point M=(ps+pe)/2;
+    //cout<<wi<<wj<<"M="<<M;
     M=M+(pe-ps)*(wi-wj)/(2*(pe-ps).sq2());
+    //cout<<", after M="<<M;
     double t=dot(M-A,ps-pe)/dot(B-A,ps-pe);
     //cout<<"M="<<M<<",t="<<t<<endl;
     return A+((B-A)*t);

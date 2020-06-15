@@ -1,0 +1,52 @@
+<svg xmlns = "http://www.w3.org/2000/svg" width = "1000" height = "1000">
+<g>
+<polygon points = "213.316, 703.220 163.238, 1000.000 0.000, 1000.000 0.000, 674.582 "
+fill = "none" stroke = "black"/>
+</g>
+<g>
+<polygon points = "747.925, 755.554 563.054, 583.681 605.389, 324.443 1000.000, 261.187 1000.000, 710.760 "
+fill = "none" stroke = "black"/>
+</g>
+<g>
+<polygon points = "725.785, 791.361 539.111, 913.638 324.003, 702.440 563.054, 583.681 747.925, 755.554 "
+fill = "none" stroke = "black"/>
+</g>
+<g>
+<polygon points = "338.578, 134.398 224.647, 374.807 0.000, 384.471 0.000, 0.000 284.197, 0.000 "
+fill = "none" stroke = "black"/>
+</g>
+<g>
+<polygon points = "605.389, 324.443 338.578, 134.398 284.197, 0.000 1000.000, 0.000 1000.000, 261.187 "
+fill = "none" stroke = "black"/>
+</g>
+<g>
+<polygon points = "605.389, 324.443 563.054, 583.681 324.003, 702.440 214.439, 702.419 224.647, 374.807 338.578, 134.398 "
+fill = "none" stroke = "black"/>
+</g>
+<g>
+<polygon points = "760.869, 1000.000 725.785, 791.361 747.925, 755.554 1000.000, 710.760 1000.000, 1000.000 "
+fill = "none" stroke = "black"/>
+</g>
+<g>
+<polygon points = "224.647, 374.807 214.439, 702.419 213.316, 703.220 0.000, 674.582 0.000, 384.471 "
+fill = "none" stroke = "black"/>
+</g>
+<g>
+<polygon points = "760.869, 1000.000 521.359, 1000.000 539.111, 913.638 725.785, 791.361 "
+fill = "none" stroke = "black"/>
+</g>
+<g>
+<polygon points = "214.439, 702.419 324.003, 702.440 539.111, 913.638 521.359, 1000.000 163.238, 1000.000 213.316, 703.220 "
+fill = "none" stroke = "black"/>
+</g>
+<circle cx="0.008" cy="868.462" r="1" stroke="red" stroke-width="1" fill="red" />
+<circle cx="755.605" cy="541.350" r="1" stroke="red" stroke-width="1" fill="red" />
+<circle cx="532.767" cy="781.041" r="1" stroke="red" stroke-width="1" fill="red" />
+<circle cx="47.045" cy="321.135" r="1" stroke="red" stroke-width="1" fill="red" />
+<circle cx="679.296" cy="65.307" r="1" stroke="red" stroke-width="1" fill="red" />
+<circle cx="383.502" cy="480.584" r="1" stroke="red" stroke-width="1" fill="red" />
+<circle cx="830.965" cy="965.428" r="1" stroke="red" stroke-width="1" fill="red" />
+<circle cx="53.462" cy="470.300" r="1" stroke="red" stroke-width="1" fill="red" />
+<circle cx="671.149" cy="992.302" r="1" stroke="red" stroke-width="1" fill="red" />
+<circle cx="383.416" cy="933.158" r="1" stroke="red" stroke-width="1" fill="red" />
+</svg>

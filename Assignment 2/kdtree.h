@@ -70,7 +70,9 @@ class KdTree{
         int size;
         vector<vector<double> > data;
         Node * root;
+
     public:
+        vector<bool> flg; 
         KdTree(vector<vector<double> > data, int dim){
             this->data=data;
             size=0;
@@ -167,12 +169,14 @@ class KdTree{
 
         knear FindKnearest(vector<double> p, int k){
             knear retps;
-            vector<bool> flg(data.size(),false);
+            vector<bool> flag(data.size(),false);
+            this->flg=flag;
             Node *r=root;
-            Findnodes(p,r,k,flg,retps);
+            Findnodes(p,r,k,retps);
             return retps;
         }
-        void Findnodes(vector<double> p, Node *r, int k, vector<bool> &flg, knear &retps){
+
+        void Findnodes(vector<double> p, Node *r, int k, knear &retps){
             if (r==NULL) return;
             Node * tmp=NULL;
             while(r!=NULL){
@@ -221,13 +225,13 @@ class KdTree{
                 
                 if (abs(tmp->val[tmp->axis] - p[tmp->axis])<retps.maxd||retps.ps.size()<k){
                     //cout<<"<-down"<<endl;
-                    Findnodes(p,tmp->l,k,flg,retps);
-                    Findnodes(p,tmp->r,k,flg,retps);
+                    Findnodes(p,tmp->l,k,retps);
+                    Findnodes(p,tmp->r,k,retps);
                 }else{
                     if (tmp->val[tmp->axis] > p[tmp->axis]) 
-                        Findnodes(p,tmp->r,k,flg,retps);
+                        Findnodes(p,tmp->r,k,retps);
                     else 
-                        Findnodes(p,tmp->l,k,flg,retps);
+                        Findnodes(p,tmp->l,k,retps);
                 }
             }
             return;
