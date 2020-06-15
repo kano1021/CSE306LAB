@@ -8,10 +8,10 @@
 
 using namespace std;
 
-#define g Point(0,-0.098)
+#define g Point(0.0,-9.8)
 //number of particles
-#define N 1000 
-#define iters 100
+#define N 1000
+#define iters 10
 
 void Move(vector<Point> &Ps, vector<Point> &v, vector<double> mass, double eps=0.004, double dt=0.002){
     vector<double> W=OptimalTransport(Ps,"uniform");
@@ -56,7 +56,7 @@ void Fluid(){
     vector<double> ws(N, 1/N);
     for (int i=0;i<N;i++){
         //cout<<Ps[i];
-        if (dist(Ps[i],circle)<=rsq) mass[i]=1/double(N);
+        if (dist(Ps[i],circle)<=rsq) mass[i]=200.0;
     }
     vector<Polygon> Polys=SHDiagram(Ps,ws);
     save_svg_p(Polys,Ps,"init.svg");
