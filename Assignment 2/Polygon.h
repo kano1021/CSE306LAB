@@ -106,13 +106,17 @@ class Polygon{
         }
 };
 
-Point centroid(Polygon ps){
+Point centroid(Polygon polygon){
     Point r;
-    for (auto& p: ps.vertices){
-        r=r+p;
-    }
-    r=r/ps.vertices.size();
-    return r;
+    double area;
+    int n = int(polygon.vertices.size());
+    for (int i = 0; i < n; i++) {
+        double a= polygon.vertices[(i+n-1)%n].y * polygon.vertices[i].x - 
+                polygon.vertices[(i+n-1)%n].x * polygon.vertices[i].y; 
+        area+=a;
+        r=r+(polygon.vertices[(i+n-1)%n] + polygon.vertices[i])/3*a;
+    } 
+    return r/area;
 }
 
 
