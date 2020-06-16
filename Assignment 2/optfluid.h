@@ -120,7 +120,7 @@ protected:
 
         fx= - g_fluid(cells,points, Ws,lambdas,w);
 
-        cout<<fx<<endl;
+        //cout<<fx<<endl;
         return fx;
     }
 
@@ -143,7 +143,7 @@ void OTweight(vector<Point> X, vector<double> &ws){
     for (int i=0;i<n+1;i++){
         ws[i]=w[i];
     }
-    cout<<ws<<endl;
+    //cout<<ws<<endl;
     return;
 }
 

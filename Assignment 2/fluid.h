@@ -10,8 +10,8 @@ using namespace std;
 
 #define g Point(0.0,-9.8)
 //number of particles
-#define N 200
-#define iters 50
+#define N 2000
+#define iters 200
 
 void Move(vector<Point> &Ps, vector<Point> &v, vector<double> mass, vector<double> W, double eps=0.004, double dt=0.002){
     vector<Polygon> Poly=SHDiagram(Ps,W);
@@ -20,24 +20,27 @@ void Move(vector<Point> &Ps, vector<Point> &v, vector<double> mass, vector<doubl
             //cout<<"here"<<endl;
             Point F=(centroid(Poly[i])-Ps[i])/(eps*eps);
             Ps[i]=Ps[i]+v[i]*dt;
-            v[i]=v[i]+F*dt/mass[i]+g*dt;
-            // if the particle goes out of the box
-            if (Ps[i].x < 0) {
-                Ps[i].x = - Ps[i].x;
-                v[i].x = - v[i].x;
-            }
-            if (Ps[i].x > 1) {
-                Ps[i].x = 2 - Ps[i].x;
-                v[i].x = - v[i].x;
-            }
-            if (Ps[i].y < 0) {
-                Ps[i].y = - Ps[i].y;
-                v[i].y = - v[i].y;
-            }
-            if (Ps[i].y > 1) {
-                Ps[i].y = 2 - Ps[i].y;
-                v[i].y = - v[i].y;
-            }
+            v[i]=v[i]+F*dt/mass[i]+g*dt;   
+        }else{
+            Point F=(centroid(Poly[i])-Ps[i])/(eps*eps);
+            Ps[i]=Ps[i]+v[i]*dt;
+            v[i]=v[i]-F*dt/mass[i];  
+        }
+        if (Ps[i].x < 0) {
+            Ps[i].x = - Ps[i].x;
+            v[i].x = - v[i].x;
+        }
+        if (Ps[i].x > 1) {
+            Ps[i].x = 2 - Ps[i].x;
+            v[i].x = - v[i].x;
+        }
+        if (Ps[i].y < 0) {
+            Ps[i].y = - Ps[i].y;
+            v[i].y = - v[i].y;
+        }
+        if (Ps[i].y > 1) {
+            Ps[i].y = 2 - Ps[i].y;
+            v[i].y = - v[i].y;
         }
     }
 }
@@ -45,17 +48,19 @@ void Move(vector<Point> &Ps, vector<Point> &v, vector<double> mass, vector<doubl
 void Fluid(){
     vector<Point> Ps=lloyd(N);
     vector<Point> v(N,Point(0,0));
-    vector<double> mass(N,-1);//if it is water it has mass=200 bigger than 0 air->-1;
+    vector<double> mass(N,-20);//if it is water it has mass=200 air->-20;
+    //(volume air is much lighter than water)
     // we assum that it is a very thin space with 1 L volume, 
     // so every point of water we asume its volume is 1/N L 
     // so mass is 1/N kg;
     Point circle(1.0/2,3.0/5);
     //cout<<circle<<endl;
-    double rsq=1.0/16;//initial water circle
+    double rsq=1.0/10;//initial water circle
     vector<double> ws(N+1, 0.0);
     for (int i=0;i<N;i++){
         //cout<<Ps[i];
-        if (dist(Ps[i],circle)<=rsq) {
+        double ran=((double)rand()/(RAND_MAX));//add a few air particle into the water
+        if (dist(Ps[i],circle)<=rsq&& ran>0.02) {
             mass[i]=200;
             ws[i]=1.0/double(N);
         }
@@ -67,7 +72,7 @@ void Fluid(){
         Move(Ps,v,mass,ws);
         //cout<<Ps;
         vector<Polygon> Polys=SHDiagram(Ps,ws);
-        save_svg_animated(Polys,"fluid.svg", i, iters);
+        save_svg_animated(Polys,mass,"fluid.svg", i, iters);
     }
 }
 
