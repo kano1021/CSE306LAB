@@ -2,7 +2,7 @@
 #define FLUID_H
 
 #include<iostream>
-#include "optimal.h"
+#include "optfluid.h"
 #include "Polygon.h"
 #include "lloyd.h"
 
@@ -10,17 +10,17 @@ using namespace std;
 
 #define g Point(0.0,-9.8)
 //number of particles
-#define N 100
-#define iters 100
+#define N 200
+#define iters 50
 
 void Move(vector<Point> &Ps, vector<Point> &v, vector<double> mass, vector<double> W, double eps=0.004, double dt=0.002){
     vector<Polygon> Poly=SHDiagram(Ps,W);
     for (int i=0;i<Ps.size();i++){
         if (mass[i]>0){//Assum only water moves but air not.
             //cout<<"here"<<endl;
-            Point F=(centroid(Poly[i])-Ps[i])/(eps*eps)+g;
+            Point F=(centroid(Poly[i])-Ps[i])/(eps*eps);
             Ps[i]=Ps[i]+v[i]*dt;
-            v[i]=v[i]+F*dt/mass[i];
+            v[i]=v[i]+F*dt/mass[i]+g*dt;
             // if the particle goes out of the box
             if (Ps[i].x < 0) {
                 Ps[i].x = - Ps[i].x;
@@ -45,29 +45,26 @@ void Move(vector<Point> &Ps, vector<Point> &v, vector<double> mass, vector<doubl
 void Fluid(){
     vector<Point> Ps=lloyd(N);
     vector<Point> v(N,Point(0,0));
-    vector<double> mass(N,-1);//if it is water it has mass bigger than 0 air->-1;
+    vector<double> mass(N,-1);//if it is water it has mass=200 bigger than 0 air->-1;
     // we assum that it is a very thin space with 1 L volume, 
     // so every point of water we asume its volume is 1/N L 
     // so mass is 1/N kg;
-    Point circle(1.0/2,2.0/5);
+    Point circle(1.0/2,3.0/5);
     //cout<<circle<<endl;
     double rsq=1.0/16;//initial water circle
-    vector<double> ws(N, 1/N);
+    vector<double> ws(N+1, 0.0);
     for (int i=0;i<N;i++){
         //cout<<Ps[i];
-        if (dist(Ps[i],circle)<=rsq) mass[i]=200.0;
+        if (dist(Ps[i],circle)<=rsq) {
+            mass[i]=200;
+            ws[i]=1.0/double(N);
+        }
     }
-    cout<<mass;
-    return;
     vector<Polygon> Polys=SHDiagram(Ps,ws);
     save_svg_p(Polys,Ps,"init.svg");
-    vector<double> W;
-    for (int i=0;i<N;i++){
-        W.push_back(0.01);
-    }
     for (int i=0;i<iters;i++){
-        OTweight(Ps,W,"uniform");
-        Move(Ps,v,W,mass);
+        OTweight(Ps,ws);
+        Move(Ps,v,mass,ws);
         //cout<<Ps;
         vector<Polygon> Polys=SHDiagram(Ps,ws);
         save_svg_animated(Polys,"fluid.svg", i, iters);
